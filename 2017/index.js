@@ -14460,7 +14460,7 @@ function pageTitle($rootScope, $timeout) {
         link: function(scope, element) {
             var listener = function(event, toState, toParams, fromState, fromParams) {
                 // Default title - load on Dashboard 1
-                var title = '快考勤 1.3.0-build43';
+                var title = '快考勤 1.3.0-build44';
                 // Create your own title pattern
                 if (toState.data && toState.data.pageTitle) title = title + ' - ' + toState.data.pageTitle;
                 $timeout(function() {
