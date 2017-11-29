@@ -14003,9 +14003,9 @@ function ImportCtrl($http, $scope, $rootScope, $timeout, Session, Notify, Attend
         $scope.importAttendanceData = true;
       });
 
-      // console.log('>>>>>>  maDurationDays = %s', $scope.maDurationDays);
-      // console.log('>>>>>>  maNormal = %s', $scope.maNormal);
-      // console.log('>>>>>>  maOvertime = %s', $scope.maOvertime);
+      console.log('>>>>>>  maDurationDays = %s', $scope.maDurationDays);
+      console.log('>>>>>>  maNormal = %s', $scope.maNormal);
+      console.log('>>>>>>  maOvertime = %s', $scope.maOvertime);
 
       setTimeout(function() {
         read.parseAttendanceFile(element.files[0], {
@@ -14460,7 +14460,7 @@ function pageTitle($rootScope, $timeout) {
         link: function(scope, element) {
             var listener = function(event, toState, toParams, fromState, fromParams) {
                 // Default title - load on Dashboard 1
-                var title = '快考勤 1.3.0-build42';
+                var title = '快考勤 1.3.0-build43';
                 // Create your own title pattern
                 if (toState.data && toState.data.pageTitle) title = title + ' - ' + toState.data.pageTitle;
                 $timeout(function() {
@@ -14496,8 +14496,12 @@ require('./services')(kqApp);
 require('./directives')(kqApp);
 require('./translations')(kqApp);
 
-kqApp.run(['$rootScope', '$location', '$log', function($rootScope, $location, $log) {
+// https://stackoverflow.com/questions/41281515/possibly-unhandled-rejection-in-angular-1-6
+kqApp.config(['$qProvider', function ($qProvider) {
+    $qProvider.errorOnUnhandledRejections(false);
+}]);
 
+kqApp.run(['$rootScope', '$location', '$log', function($rootScope, $location, $log) {
   var APP_ID = 'dOtDFaUAfeU3TqnT1a0zg6T4-gzGzoHsz';
   var APP_KEY = 'lY1cTC8yLzFUHzQHOJEjETAh';
 
@@ -14506,41 +14510,12 @@ kqApp.run(['$rootScope', '$location', '$log', function($rootScope, $location, $l
     appKey: APP_KEY
   });
 
+  // trace PV
   $rootScope.$on('$stateChangeStart',  function(event, toState, toParams, fromState, fromParams){
-    // trace PV
     var path = location.pathname + '#' + toState.url;
     window._czc && _czc.push(﻿["_trackPageview", path, location.href]);
   });
-
-    // $rootScope.$on('$routeChangeSuccess', function(evt, next, prev){
-    //   var page = next.$$route.originalPath;
-    //   var referrer = location.href;
-    //   console.log("next " + page)
-    //   // window._czc && _czc.push(﻿["_trackPageview", page, referrer]);
-    // })
-
-    // $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams){
-    //   $log.error('The request state was not found: ' + unfoundState);
-    // });
-    //
-    // $rootScope.$on('$stateChangeStart', function(e, toState, toParams, fromState, fromParams) {
-    //     console.log('$stateChangeStart >>>>>>>>>> %s', toState);
-    // });
-    //
-    // $rootScope.$on('$stateChangeSuccess', function(e, toState, toParams, fromState, fromParams) {
-    //     console.log('$stateChangeSuccess >>>>>>>>>> %s', toState);
-    // });
-    //
-    // $rootScope.$on("routeChangeError", function(event, current, previous, eventObj) {
-    //     // if(eventObj.authenticated === false) {
-    //     //     $state.go('login');
-    //     // }
-    //     console.log('routeChangeError >>>>>>>>>>>>>>>>>>');
-    //     console.log(current);
-    // });
-
-  }
-]);
+}]);
 
 module.exports = kqApp;
 
@@ -15345,28 +15320,12 @@ function stateProvider ($stateProvider, $urlRouterProvider) {
 }
 
 module.exports = function (app) {
-  // app.config(['$routeProvider', routeProvider]); // Deprecated
   app
     .config(['$stateProvider', '$urlRouterProvider', stateProvider])
     // .config(ConfigUrlRouterProvider)
     .run(['$rootScope', '$state', 'Session', function($rootScope, $state, Session) {
-      console.log('app run');
-
-      // $rootScope.$on('$routeChangeStart', function(event, currRoute, prevRoute){
-      //   console.log(currRoute)
-      // });
-
-      // $rootScope.$on('$locationChangeStart', function(event, next, current) {
-      //   // console.log(event);
-      //   // console.log( typeof(next));
-      //   console.log('$locationChangeStart', next);
-      //   console.log('Session.access_token ', Session.access_token);
-      //    if (!Session.access_token) {
-      //        $state.go('login');
-      //    }
-      // });
-
       $rootScope.$state = $state;
+      console.log('app run');
     }]);
 }
 
@@ -15847,7 +15806,8 @@ lang['zh'] = {
   'Select File': '选择文件',
   'SETTINGS': '设置',
   'Profile': '个人信息',
-  'Logout': '退出'
+  'Logout': '退出',
+  'days': '天'
 };
 
 module.exports = function(app) {
