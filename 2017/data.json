@@ -1,0 +1,24 @@
+{
+  "employees": [
+    {
+      "name": "王小二",
+      "dept": "人力资源部",
+      "sick_acc": 1.5,
+      "casual_acc": 0,
+      "annual": [
+        {"year": 2015, "expires": "2016-03-31", "total": 6, "remain": 0},
+        {"year": 2016, "expires": "2017-03-31", "total": 7, "remain": 7}
+      ]
+    },
+    {
+      "name": "隔壁老王",
+      "dept": "广告产品部",
+      "sick_acc": 0,
+      "casual_acc": 0,
+      "annual": [
+        {"year": 2015, "expires": "2016-03-31", "total": 6, "remain": 0},
+        {"year": 2016, "expires": "2017-03-31", "total": 7, "remain": 5}
+      ]
+    }
+  ]
+}

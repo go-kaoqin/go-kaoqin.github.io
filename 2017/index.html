@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html ng-app="kqApp">
+  <head>
+    <meta charset="utf-8">
+    <title page-title>快考勤</title>
+    <link rel="stylesheet" href="css/vendor.packaged.css" />
+    <link rel="stylesheet" href="libs/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="css/kaoq.css" />
+    <style>
+    </style>
+  </head>
+  <body ng-controller="MainCtrl as main" class="{{$state.current.data.specialClass}}" >
+
+  <div id="viewport" ui-view></div>
+
+  <!-- avos 存储服务 -->
+  <script src="//cdn1.lncld.net/static/js/3.0.2/av-min.js"></script>
+
+  <script src="runtime.js?rv=8f52522"></script>
+  <script src="js/vendor.min.js"></script>
+  <script src="libs/angular-translate/2.11.1/angular-translate.min.js"></script>
+  <script src="libs/ui-router/0.2.11/angular-ui-router.min.js"></script>
+  <script src="js/ui-bootstrap-tpls-2.1.1.min.js"></script>
+
+  <script src="https://cdn1.lncld.net/static/js/av-min-1.4.0.js"></script>
+  <script src="js/plugins/datepicker/bootstrap-datepicker.js"></script>
+  <script src="libs/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+
+  <script src="templates.js?rv=8f52522"></script>
+  <script src="index.js?rv=8f52522"></script>
+  </body>
+</html>
+<!-- build at Sat Aug 19 2017 00:13:59 GMT+0800 (CST).1.2.1 @1.2.1 -->
