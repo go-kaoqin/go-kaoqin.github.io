@@ -13988,6 +13988,14 @@ function ImportCtrl($http, $scope, $rootScope, $timeout, Session, Notify, Attend
   $scope.maOvertime = settings.mealAllowance.overtime; // 加班
   $scope.importAttendanceData = false;
 
+  // 员工名称数量
+  $scope.employeeBookSize = 0;
+  // 员工名册表头
+  $scope.employeeBookHeads = [
+    '唯一编号', '考勤卡编号', '姓名', '邮箱', '首选电话', '办公室', '事业部', '部门',
+    '子部门', '入职日期', '离职日期', '是否在职', '是否离职', '是否实习', '当前职称'
+  ];
+
   // 处理考勤机文件
   $scope.handleAttendanceFile = function(element) {
     if (element && element.files && element.files[0]) {
@@ -14020,11 +14028,11 @@ function ImportCtrl($http, $scope, $rootScope, $timeout, Session, Notify, Attend
               $rootScope.attendanceLength = data.length;
               Session.setAttendanceData(data); // 统计之后的出勤数据数组
               Session.setAttendanceMapByName(grouped);
-              console.log('---> 导入attendance file');
+              // console.log('---> 导入attendance file');
               // console.log(data);
-              _.each(data, function(d_) {
-                console.log('-> %s ->', d_.name, JSON.stringify(d_))
-              })
+              // _.each(data, function(d_) {
+              //   console.log('-> %s ->', d_.name, JSON.stringify(d_))
+              // })
               // AttendanceService.saveRaw(data);
             }
           });
@@ -14035,6 +14043,30 @@ function ImportCtrl($http, $scope, $rootScope, $timeout, Session, Notify, Attend
 
   // 处理请假文件
   // $scope.handleAbsenceFile = function(element) {}
+
+  // 处理员工名册
+  $scope.handleEmployeeBookFile = function(element) {
+    if (element && element.files && element.files[0]) {
+      read.parseEmployeeBookFile(element.files[0], {}, function(err, data) {
+        if (!err) {
+          Notify.info('员工名册导入成功');
+        } else {
+          Notify.warn('员工名册导入不成功');
+          return
+        }
+
+        $scope.$apply(function(){
+          if (data && data.length) {
+            // var settled = _.chain(data).filter(function(d) {
+            //   return d.range && d.range.indexOf('-') > -1
+            // }).value();
+            Session.setEmployeeData(data);
+            $scope.employeeBookSize = data.length
+          }
+        });
+      })
+    }
+  }
 
   // 处理自定义上下班时间点文件
   $scope.handleCustomTimeRangeFile = function(element) {
@@ -14057,10 +14089,8 @@ function ImportCtrl($http, $scope, $rootScope, $timeout, Session, Notify, Attend
   // 处理年假文件
   $scope.handleAnnualsFile = function(element) {
     if (element && element.files && element.files[0]) {
-      // 读取设置
-      SettingService
-      .getTableColumnsAlias()
-      .then(function(aliases){
+
+      var hdl = function(aliases){
         var baseInfo = aliases && aliases.baseInfo
         read.parseStdAnnualsFile({file: element.files[0], columns_aliases: baseInfo}, function(err, data) {
           if (!err) {
@@ -14079,6 +14109,16 @@ function ImportCtrl($http, $scope, $rootScope, $timeout, Session, Notify, Attend
             }
           });
         })
+      };
+
+      // 读取设置
+      SettingService
+      .getTableColumnsAlias()
+      .then(hdl)
+      .catch(function(){
+        // 默认设置
+        console.info("没有设置别名")
+        hdl({ baseInfo: {} })
       })
     }
   }
@@ -14124,15 +14164,29 @@ function ExploreCtrl($http, $scope, $rootScope, $timeout, $state, Session, Explo
   var annualsData = Session.getAnnualsData(); // 如果已经导入了年假文件
   var annualsMapByName = Session.getAnnualsMapByName() || {};
 
+  // 员工名册, 替代此前的 emps.csv 静态文件
+  var employeeData = Session.getEmployeeData();
+
   var tableData = ExploreService.prepareData(attendanceData, annualsData, annualsMapByName);
 
   $scope.isActive = function(type) {
     return type && params.type == type
   }
 
-  $.get('emps.csv', function(resp) {
+  // $.get('emps.csv', function(resp) {
+
+  setTimeout(function(){
     // 员工花名册，包含顺序
-    var emps_ = utils.csvToObjects(resp, [{prop: 'id'}, null, null, null, null, {prop: 'name'}], true);
+    var emps_ = _.filter(employeeData, function(emp){
+      if (emp && emp.isActive) {
+        return true
+      }
+      return false
+    });
+
+    // NOTE: 已经废弃该方法。
+    // 读取 csv 文件
+    // var emps_ = utils.csvToObjects(resp, [{prop: 'id'}, null, null, null, null, {prop: 'name'}], true);
     var nameIdMap = emps_.reduce(function(prev, cur){
       if (!cur) {return prev;}
       prev[cur.name] = cur.id;
@@ -14163,7 +14217,7 @@ function ExploreCtrl($http, $scope, $rootScope, $timeout, $state, Session, Explo
     )
 
     window._excelTable = excelTable;
-  });
+  }, 20);
 
   // var cfg = _.extend({}, settings.fullcalendar, {
   //   defaultDate: '2016-08-21'
@@ -14406,7 +14460,7 @@ function pageTitle($rootScope, $timeout) {
         link: function(scope, element) {
             var listener = function(event, toState, toParams, fromState, fromParams) {
                 // Default title - load on Dashboard 1
-                var title = '快考勤 1.2.1-build37';
+                var title = '快考勤 1.3.0-build39';
                 // Create your own title pattern
                 if (toState.data && toState.data.pageTitle) title = title + ' - ' + toState.data.pageTitle;
                 $timeout(function() {
@@ -14653,6 +14707,39 @@ exports.getEmployees = function(callback) {
 // 处理原始考勤机导出文件
 exports.parseRawAttendanceFile = function(file, callback) {
   throw Error('Not supported yet.');
+}
+
+// 处理员工名册
+// since 2017-11-29
+exports.parseEmployeeBookFile = function(file, options, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var data = e.target.result;
+    var workbook = XLSX.read(data, {type: 'binary'});
+    var first_sheet_name = workbook.SheetNames[0];
+    // console.log("Sheet[0].name = " + first_sheet_name);
+    /* Get worksheet */
+    var worksheet = workbook.Sheets[first_sheet_name];
+    var ref = worksheet['!ref'];
+    var json = XLSX.utils.sheet_to_json(worksheet);
+
+    var ret = _.chain(json).map(function(d) {
+      var d_ = {
+        name: d['姓名'],
+        id: d['唯一编号'],
+        cardId: d['员工卡编号'],
+        isActive: d['是否在职'] == '是',
+        isTrainee: d['是否实习'] == '是',
+        isFormal: d['是否转正']  == '是',
+        joinDate: d['入职日期'],
+        quitDate: d['离职日期']
+      }
+      return d_;
+    }).value();
+
+    callback(null, ret);
+  };
+  reader.readAsBinaryString(file);
 }
 
 // 处理人工加工过的考勤机导出文件
@@ -15337,6 +15424,15 @@ function Session($http, Notify) {
 
   var customData = []; // 自定义上下班时间
 
+  // 所有员工列表
+  // since 2017-11-28
+  //
+  // { "name": "", "id": "", "cardId": "",
+  //    "joinDate": "", "quitDate": "", "isActive": "",
+  //    "isTrainee": "", "isFormal": ""
+  // }
+  var employeeData = [];
+
   var user; // 登录用户
 
   return {
@@ -15375,6 +15471,8 @@ function Session($http, Notify) {
     getAttendanceMapByName: function() { return attendanceMapByName },
     setCustomData: function(data) { customData = data || [] },
     getCustomData: function() { return customData },
+    setEmployeeData: function(data) { employeeData = data || [] },
+    getEmployeeData: function() { return employeeData },
   }
 }
 
