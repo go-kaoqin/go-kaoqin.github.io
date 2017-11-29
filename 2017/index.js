@@ -14460,7 +14460,7 @@ function pageTitle($rootScope, $timeout) {
         link: function(scope, element) {
             var listener = function(event, toState, toParams, fromState, fromParams) {
                 // Default title - load on Dashboard 1
-                var title = '快考勤 1.3.0-build41';
+                var title = '快考勤 1.3.0-build42';
                 // Create your own title pattern
                 if (toState.data && toState.data.pageTitle) title = title + ' - ' + toState.data.pageTitle;
                 $timeout(function() {
@@ -14508,7 +14508,8 @@ kqApp.run(['$rootScope', '$location', '$log', function($rootScope, $location, $l
 
   $rootScope.$on('$stateChangeStart',  function(event, toState, toParams, fromState, fromParams){
     // trace PV
-    window._czc && _czc.push(﻿["_trackPageview", toState.url, location.href]);
+    var path = location.pathname + '#' + toState.url;
+    window._czc && _czc.push(﻿["_trackPageview", path, location.href]);
   });
 
     // $rootScope.$on('$routeChangeSuccess', function(evt, next, prev){
